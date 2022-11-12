@@ -414,7 +414,16 @@ plot_gcn <- function(edgelist_gcn, net, color_by="module", hubs = NULL,
         }
 
         # Handle node labeling based on which labels to display (top hubs, hubs or all genes)
-        if(show_labels == "all") {
+        if(is.data.frame(show_labels)) {
+            colnames(show_labels) <- c("Gene", "label")
+            nod_at$isLabel <- ifelse(nod_at$Gene %in% show_labels[,1], TRUE, FALSE)
+            nod_at <- merge(nod_at, show_labels, by = 1, all.x = TRUE)
+            add_nodelabel <- ggnetwork::geom_nodelabel_repel(ggplot2::aes_(label = ~label),
+                                                             color="azure4",
+                                                             box.padding = ggnetwork::unit(1, "lines"),
+                                                             data = function(x) { x[ x$isLabel, ]},
+                                                             show.legend = FALSE)
+        } else if(show_labels == "all") {
             nod_at$Degree2 <- nod_at$Degree * 0.4
             add_nodelabel <- ggnetwork::geom_nodetext(ggplot2::aes_(label = ~name, size = ~Degree2),
                                                       show.legend = FALSE)
